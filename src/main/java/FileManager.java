@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Iterator;
+import attendance.*;
 
 /**
  * A class that reads and writes JSON files.

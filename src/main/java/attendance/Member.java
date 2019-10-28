@@ -1,3 +1,5 @@
+package attendance;
+
 /**
  * A class representing a Member object.
  */
