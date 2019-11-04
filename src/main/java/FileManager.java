@@ -137,6 +137,7 @@ public class FileManager {
         //Main JSON object
         JSONObject object = new JSONObject();
 
+        //Second array object "Date"
         //Create a JSON array
         JSONArray array = new JSONArray();
 
