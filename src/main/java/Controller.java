@@ -1,29 +1,30 @@
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Comparator;
+
 import attendance.*;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 /**
  * This is the main class of the application.
  */
 public class Controller {
-    private ArrayList<Attendance> attendances;
+    private HashMap<LocalDate, ArrayList<Attendance>> attendances;
     private ArrayList<Member> members;
     private View view;
     private FileManager fm;
-    private Scanner scan;
 
     /**
      * Constructor of the Controller class.
      */
     public Controller() {
-        attendances = new ArrayList<>();
+        attendances = new HashMap<>();
         members = new ArrayList<>();
         view = new View();
-        fm = new FileManager("src/main/resources/");
-        scan = new Scanner(System.in);
+        fm = new FileManager();
     }
 
     /**
@@ -38,7 +39,7 @@ public class Controller {
                 case "1":
                     //Load members file to application
                     members.clear();
-                    members.addAll(fm.readFileMembers());
+                    members.addAll(fm.readFileMembers("src/main/resources/member-list.json"));
                     view.printLoadMessage();
                     checkDuplicateId();
                     break;
@@ -59,13 +60,13 @@ public class Controller {
                     break;
                 case "3":
                     // Save attendance to file
-                    attendances.addAll(fm.readFileAttendance());
-                    fm.writeFileAttendance(attendances);
+                    fm.writeJsonToFile(fm.convertAttendanceToJson(attendances),
+                            "src/main/resources/attendance-list.json");
                     view.printSaveMessage();
                     break;
                 case "4":
                     //Load attendance
-                    attendances.addAll(fm.readFileAttendance());
+                    attendances.putAll(fm.readFileAttendance("src/main/resources/attendance-list.json"));
                     // Display attendance
                     if(attendances.size() == 0){
                         view.printNoMembersInList();
@@ -94,6 +95,7 @@ public class Controller {
      * @param date
      */
     private void checkAttendance(LocalDate date) {
+        ArrayList<Attendance> attendance = new ArrayList<>();
         int countMembers = 0;
         for(Member member : members){
             boolean quit = false;
@@ -106,11 +108,11 @@ public class Controller {
 
                 switch (userInput().toLowerCase()){
                     case "y":
-                        attendances.add(new Attendance(member, date, true));
+                        attendance.add(new Attendance(member, true));
                         quit = true;
                         break;
                     case "n":
-                        attendances.add(new Attendance(member, date, false));
+                        attendance.add(new Attendance(member, false));
                         quit = true;
                         break;
                     default:
@@ -120,6 +122,8 @@ public class Controller {
             }
             countMembers++;
         }
+
+        attendances.put(date,attendance);
 
         view.printAttendanceComplete(countMembers);
     }
@@ -144,13 +148,14 @@ public class Controller {
      * @return user input as a String.
      */
     public String userInput() {
+        Scanner scan = new Scanner(System.in);
         return scan.nextLine();
     }
 
     public void printAttendance(){
         //show list of dates
-        attendances.stream()
-                .map(Attendance::getDate)
+        attendances.entrySet().stream()
+                .map(HashMap.Entry::getKey)
                 .distinct()
                 .forEach(System.out::println);
 
@@ -159,10 +164,8 @@ public class Controller {
         view.printDateQuestion();
         LocalDate date = convertDate(userInput());
         if (date != null) {
-            attendances.stream()
-                        .filter(attendance -> attendance.getDate().compareTo(date) == 0)
-                        .sorted(Comparator.comparing(attendance -> attendance.getMember().getMemberName()))
-                        .map(Attendance::toString)
+            attendances.entrySet().stream()
+                        .map(Map.Entry::getValue)
                         .forEach(System.out::println);
         } else {
             view.printInvalidInput();

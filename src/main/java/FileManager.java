@@ -7,7 +7,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import attendance.*;
 
@@ -15,27 +17,23 @@ import attendance.*;
  * A class that reads and writes JSON files.
  */
 public class FileManager {
-    private String jsonPath;
-    private final String JSON_FILE_NAME_MEMBERS = "member-list.json";
-    private final String JSON_FILE_NAME_ATTENDANCE = "attendance-list.json";
 
     /**
      * Constructor of the FileManager.
-     * @param jsonPath the path where is located the json file.
      */
-    public FileManager(String jsonPath){
-        this.jsonPath = jsonPath;
+    public FileManager(){
     }
 
     /**
      * Reads the JSON members file and retrieves a list.
+     * @param membersFile the path and name of file.
      * @return a list of Members.
      */
-    public ArrayList<Member> readFileMembers(){
+    public ArrayList<Member> readFileMembers(String membersFile){
         ArrayList<Member> jsonMembers = new ArrayList<>();
         JSONParser parser = new JSONParser();
 
-        try (Reader reader = new FileReader(jsonPath + JSON_FILE_NAME_MEMBERS)) {
+        try (Reader reader = new FileReader(membersFile)) {
 
             JSONObject jsonObject = (JSONObject) parser.parse(reader);
 
@@ -61,10 +59,11 @@ public class FileManager {
     }
 
     /**
-     * Write the list of members in the JSON file.
+     * Converts the members list into a JSON object.
      * @param members a list with members.
+     * @return a json object.
      */
-    public void writeFileMembers(ArrayList<Member> members){
+    public JSONObject convertMembersToJson(ArrayList<Member> members){
         //Main JSON object
         JSONObject object = new JSONObject();
 
@@ -85,7 +84,16 @@ public class FileManager {
         //put everything inside the object
         object.put("members", array);
 
-        try (FileWriter file = new FileWriter(jsonPath + JSON_FILE_NAME_MEMBERS)) {
+        return object;
+    }
+
+    /**
+     * Write a JSON object to a file.
+     * @param fileName the path and name of file to be written.
+     * @param object the json object to be written on the file.
+     */
+    public void writeJsonToFile(JSONObject object, String fileName){
+        try (FileWriter file = new FileWriter(fileName)) {
             file.write(object.toJSONString());
         } catch (IOException e) {
             e.printStackTrace();
@@ -93,74 +101,105 @@ public class FileManager {
     }
 
     /**
-     * Reads the JSON attendance file and retrieves a list.
-     * @return a list of Attendance.
+     * Reads the JSON attendance file and retrieves a Map.
+     * @param attendanceFile the path and name of file.
+     * @return a Map of Attendances.
      */
-    public ArrayList<Attendance> readFileAttendance(){
-        ArrayList<Attendance> jsonAttendance = new ArrayList<>();
+    public HashMap<LocalDate, ArrayList<Attendance>> readFileAttendance(String attendanceFile){
+        HashMap<LocalDate, ArrayList<Attendance>> attendancesMap = new HashMap<>();
+
+        //Parse the json file
         JSONParser parser = new JSONParser();
+        try (Reader reader = new FileReader(attendanceFile)) {
 
-        try (Reader reader = new FileReader(jsonPath + JSON_FILE_NAME_ATTENDANCE)) {
+            JSONObject mainJsonObject = (JSONObject) parser.parse(reader);
 
-            JSONObject jsonObject = (JSONObject) parser.parse(reader);
+            JSONArray attendances = (JSONArray) mainJsonObject.get("attendances");
 
-            // loop members array
-            JSONArray attendances = (JSONArray) jsonObject.get("attendance");
-            Iterator<String> iterator = attendances.iterator();
-            while (iterator.hasNext()) {
-                Object slide = iterator.next();
-                JSONObject jsonObject2 = (JSONObject) slide;
-                String name = (String) jsonObject2.get("name");
-                String id = (String) jsonObject2.get("id");
-                String date = (String) jsonObject2.get("date");
-                boolean attended = (boolean) jsonObject2.get("attended");
+            //Iterate the main object to retrieve the date and attendance list
+            Iterator mainIterator = attendances.iterator();
+            while (mainIterator.hasNext()){
+                Object mainSlide = mainIterator.next();
+                JSONObject jsonObject = (JSONObject) mainSlide;
 
-                //Add fields to the list
-                Attendance attendance = new Attendance(new Member(name, id), Controller.convertDate(date), attended);
-                jsonAttendance.add(attendance);
+                String date = (String) jsonObject.get("date");
+
+                JSONArray attendance = (JSONArray) jsonObject.get("attendance");
+
+                //Iterate through the attendance list to retrieve the member
+                //and attendance status
+                ArrayList<Attendance> jsonAttendance = new ArrayList<>();
+                Iterator iterator = attendance.iterator();
+                while (iterator.hasNext()) {
+                    Object slide = iterator.next();
+                    JSONObject jsonObject2 = (JSONObject) slide;
+
+                    String name = (String) jsonObject2.get("name");
+
+                    String id = (String) jsonObject2.get("id");
+
+                    boolean attended = (boolean) jsonObject2.get("attended");
+
+                    //Create a new member
+                    Member member = new Member(name, id);
+
+                    //create an attendance
+                    Attendance at = new Attendance(member, attended);
+                    jsonAttendance.add(at);
+                }
+
+                attendancesMap.put(Controller.convertDate(date), jsonAttendance);
             }
-
-        } catch (IOException e) {
+        } catch(IOException e){
             e.printStackTrace();
-        } catch (ParseException e) {
+        } catch(ParseException e){
             e.printStackTrace();
         }
-
-        return jsonAttendance;
+        return attendancesMap;
     }
 
     /**
      * Write the list of attendances in the JSON file.
-     * @param attendance a list with members.
+     * @param attendances a map with members and attendance date.
+     * @return a json object.
      */
-    public void writeFileAttendance(ArrayList<Attendance> attendance){
+    public JSONObject convertAttendanceToJson(HashMap<LocalDate, ArrayList<Attendance>> attendances){
         //Main JSON object
-        JSONObject object = new JSONObject();
+        JSONObject mainObject = new JSONObject();
 
-        //Second array object "Date"
         //Create a JSON array
-        JSONArray array = new JSONArray();
+        JSONArray mainArray = new JSONArray();
 
-        for(int index = 0; index < attendance.size(); index++)
-        {
-            //Second JSON object with an array
+        // iterating over a map
+        for(HashMap.Entry<LocalDate, ArrayList<Attendance>> attendanceByDate : attendances.entrySet()){
+            //JSON object inside the main an array
             JSONObject arrayElement = new JSONObject();
-            arrayElement.put("name", attendance.get(index).getMember().getMemberName());
-            arrayElement.put("id", attendance.get(index).getMember().getMemberName());
-            arrayElement.put("date", attendance.get(index).getDate().toString());
-            arrayElement.put("attended", attendance.get(index).isHasAttended());
 
-            //insert in the array
-            array.add(arrayElement);
+            //Add date and another array to arrayElement
+            arrayElement.put("date", attendanceByDate.getKey().toString());
+
+            //Create a JSON array to insert inside the arrayElement
+            JSONArray array = new JSONArray();
+
+            // iterating over the array list
+            int index = 0;
+            for(Attendance attendance : attendanceByDate.getValue()){
+                JSONObject attendanceElement = new JSONObject();
+                attendanceElement.put("name", attendance.getMember().getMemberName());
+                attendanceElement.put("id", attendance.getMember().getMemberID());
+                attendanceElement.put("attended", attendance.isHasAttended());
+                array.add(attendanceElement);
+                index++;
+            }
+            //insert in the main array
+            arrayElement.put("attendance", array);
+            mainArray.add(arrayElement);
+
         }
 
         //put everything inside the object
-        object.put("attendance", array);
+        mainObject.put("attendances", mainArray);
 
-        try (FileWriter file = new FileWriter(jsonPath + JSON_FILE_NAME_ATTENDANCE)) {
-            file.write(object.toJSONString());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        return mainObject;
     }
 }
