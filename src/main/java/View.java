@@ -13,7 +13,8 @@ public class View {
      * Print out a Welcome message to the user.
      */
     public void printWelcome() {
-        System.out.println("Welcome to Attendance application\n");
+        System.out.println("Welcome to Attendance application");
+        System.out.println("#################################\n");
     }
 
     /**
@@ -21,8 +22,8 @@ public class View {
      */
     public void printOptions(){
         System.out.println("Pick an option:");
-        String[] actions = {"(1) Load member file", "(2) Check attendance", "(3) Save attendance to file",
-               "(4) Display attendance", "(5) Create and edit member file", "(6) Quit"};
+        String[] actions = {"(1) Load member file", "(2) Check attendance",
+               "(3) Display attendance", "(4) Create new member file", "(5) Edit member file", "(6) Quit"};
         for (int i = 0; i < actions.length; i++) {
             System.out.println(actions[i]);
         }
@@ -32,7 +33,7 @@ public class View {
      * Print a message asking for any input to return to the main menu
      */
     public void printReturnMenu() {
-        System.out.println("Please, press Enter to return to the menu");
+        System.out.println("Please, press Enter to return to the menu.");
     }
 
     /**
@@ -87,8 +88,10 @@ public class View {
     /**
      * Print a message showing that attendance is complete.
      */
-    public void printAttendanceComplete(int totalMembers) {
-        System.out.println("Attendance complete for the " + totalMembers + " members of the class.");
+    public void printAttendanceComplete(int present, int absent) {
+        System.out.println("Attendance complete. From the " + (present + absent) + " people in the list, "
+                                + present + " where present, while "
+                                + absent + " where absent.");
     }
 
     /**
@@ -96,5 +99,33 @@ public class View {
      */
     public void printDuplicateIdMessage() {
         System.out.println("WARNING: the list as members with duplicate ids!");
+    }
+
+    /**
+     * Print a message requesting the name of a file with a members list.
+     */
+    public void printFileNameRequest() {
+        System.out.println("Write the file name of the member list (json extension must be included):");
+    }
+
+    /**
+     * Print a message stating that wasn't possible to create the directory.
+     */
+    public void printNoDirectory() {
+        System.out.println("Could not create directory. File not saved.");
+    }
+
+    /**
+     * Print a message stating that the file is empty.
+     */
+    public void printEmptyFile() {
+        System.out.println("Could not retrieve data. File is empty.");
+    }
+
+    /**
+     * Print a message stating that file not found.
+     */
+    public void printFileNotFound() {
+        System.out.println("File not found.");
     }
 }
