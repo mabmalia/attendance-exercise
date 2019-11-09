@@ -41,12 +41,12 @@ of your own choice to parse and write JSON files.
 ## Questions
 ​
 These are some open questions for you to think about,
-1. How can we save the attendance sheet? What information do we need to save?
-2. How is the JSON library handling file writes?
-3. What are the pros and cons of having to save a file...
-1. ...of the whole attendance sheet?
-2. ...for every member?
-4. What could be used instead of JSON?
-5. Discuss the decision behind your chosen library.
-6. What kind of data structure can we use to store members?
-7. What kind of data structures can we use for the application?
+* How can we save the attendance sheet? What information do we need to save?
+* How is the JSON library handling file writes?
+* What are the pros and cons of having to save a file...
+* ...of the whole attendance sheet?
+* ...for every member?
+* What could be used instead of JSON?
+* Discuss the decision behind your chosen library.
+* What kind of data structure can we use to store members?
+* What kind of data structures can we use for the application?
