@@ -39,7 +39,7 @@ public class Attendance {
      */
     public String hasAttendedToString() {
 
-        return (hasAttended = true) ? "Attended" : "Not Attended";
+        return (hasAttended) ? "Attended" : "Not Attended";
     }
 
     /**
@@ -50,7 +50,7 @@ public class Attendance {
     public String toString() {
         return "{" +
                 "ID = " + member.getMemberID() +
-                ", Name" + member.getMemberName() +
+                ", Name = " + member.getMemberName() +
                 ", Status = " + hasAttendedToString() +
                 '}';
     }
