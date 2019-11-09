@@ -3,10 +3,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Reader;
+import java.io.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,11 +14,12 @@ import attendance.*;
  * A class that reads and writes JSON files.
  */
 public class FileManager {
-
+    View view;
     /**
      * Constructor of the FileManager.
      */
     public FileManager(){
+        view = new View();
     }
 
     /**
@@ -50,9 +48,9 @@ public class FileManager {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            view.printFileNotFound();
         } catch (ParseException e) {
-            e.printStackTrace();
+            view.printEmptyFile();
         }
 
         return jsonMembers;
@@ -89,11 +87,23 @@ public class FileManager {
 
     /**
      * Write a JSON object to a file.
-     * @param fileName the path and name of file to be written.
      * @param object the json object to be written on the file.
+     * @param fileName the name of file to be written.
+     * @param filePath the name of the directory where the file should be written.
      */
-    public void writeJsonToFile(JSONObject object, String fileName){
-        try (FileWriter file = new FileWriter(fileName)) {
+    public void writeJsonToFile(JSONObject object, String filePath, String fileName){
+        //Check if directory exists, otherwise create it
+        File directory = new File(filePath);
+        if(!directory.isDirectory()){
+            boolean createDirectory = directory.mkdir();
+            if(!createDirectory){
+                view.printNoDirectory();
+                return;
+            }
+        }
+
+        //Write on the file
+        try (FileWriter file = new FileWriter(filePath + fileName)) {
             file.write(object.toJSONString());
         } catch (IOException e) {
             e.printStackTrace();
@@ -150,11 +160,13 @@ public class FileManager {
 
                 attendancesMap.put(Controller.convertDate(date), jsonAttendance);
             }
-        } catch(IOException e){
-            e.printStackTrace();
-        } catch(ParseException e){
-            e.printStackTrace();
+
+        } catch (IOException e) {
+            view.printFileNotFound();
+        } catch (ParseException e) {
+            view.printEmptyFile();
         }
+
         return attendancesMap;
     }
 

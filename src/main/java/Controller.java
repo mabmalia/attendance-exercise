@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import attendance.*;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Scanner;
 
 /**
@@ -37,14 +36,13 @@ public class Controller {
             view.printOptions();
             switch (userInput()) {
                 case "1":
-                    //Load members file to application
-                    members.clear();
-                    members.addAll(fm.readFileMembers("src/main/resources/member-list.json"));
-                    view.printLoadMessage();
+                    //Load members file
+                    loadMemberList();
                     checkDuplicateId();
                     break;
                 case "2":
                     // Check attendance
+                    // if a member file was loaded
                     if(members.size() == 0){
                       view.printNoMembersInList();
                     }
@@ -52,31 +50,32 @@ public class Controller {
                         view.printDateQuestion();
                         LocalDate date = convertDate(userInput());
                         if (date != null) {
+                            //Load attendances from file
+                            loadAttendanceList();
+                            //Check attendance
                             checkAttendance(date);
+                            // Save attendance to file
+                            fm.writeJsonToFile(fm.convertAttendanceToJson(attendances),
+                                    "attendance-lists/","attendance-list.json");
+                            view.printSaveMessage();
                         } else {
                             view.printInvalidInput();
                         }
                     }
                     break;
                 case "3":
-                    // Save attendance to file
-                    fm.writeJsonToFile(fm.convertAttendanceToJson(attendances),
-                            "src/main/resources/attendance-list.json");
-                    view.printSaveMessage();
+                    //Load attendance from file
+                    loadAttendanceList();
+
+                    // Display attendance
+                    printAttendance();
                     break;
                 case "4":
-                    //Load attendance
-                    attendances.putAll(fm.readFileAttendance("src/main/resources/attendance-list.json"));
-                    // Display attendance
-                    if(attendances.size() == 0){
-                        view.printNoMembersInList();
-                    }
-                    else{
-                        printAttendance();
-                    }
+                    // Create new member file
+                    System.out.println("To be implemented.");
                     break;
                 case "5":
-                    // Create and edit member file
+                    // Edit an existing member file
                     System.out.println("To be implemented.");
                     break;
                 case "6":
@@ -91,12 +90,31 @@ public class Controller {
     }
 
     /**
+     * Loads a specific file with members list.
+     */
+    private void loadMemberList(){
+        members.clear();
+        view.printFileNameRequest();
+        members.addAll(fm.readFileMembers("member-lists/" + userInput()));
+        view.printLoadMessage();
+    }
+
+    /**
+     * Loads the attendance list.
+     */
+    private void loadAttendanceList(){
+        attendances.clear();
+        attendances.putAll(fm.readFileAttendance("attendance-lists/attendance-list.json"));
+    }
+
+    /**
      * Method that allows user to check attendance for a specific day.
      * @param date
      */
     private void checkAttendance(LocalDate date) {
         ArrayList<Attendance> attendance = new ArrayList<>();
-        int countMembers = 0;
+        int present = 0;
+        int absent = 0;
         for(Member member : members){
             boolean quit = false;
             while (!quit){
@@ -110,22 +128,23 @@ public class Controller {
                     case "y":
                         attendance.add(new Attendance(member, true));
                         quit = true;
+                        present++;
                         break;
                     case "n":
                         attendance.add(new Attendance(member, false));
                         quit = true;
+                        absent++;
                         break;
                     default:
                         view.printInvalidInput();
                         break;
                 }
             }
-            countMembers++;
         }
 
         attendances.put(date,attendance);
 
-        view.printAttendanceComplete(countMembers);
+        view.printAttendanceComplete(present, absent);
     }
 
     /**
@@ -153,38 +172,29 @@ public class Controller {
     }
 
     public void printAttendance(){
-        //show list of dates
-        attendances.entrySet().stream()
-                .map(HashMap.Entry::getKey)
-                .distinct()
-                .forEach(System.out::println);
-
-        //User chooses a date
-        //If it is valid show attendance for that day
-        view.printDateQuestion();
-        LocalDate date = convertDate(userInput());
-        if (date != null) {
-            attendances.entrySet().stream()
-                        .map(Map.Entry::getValue)
-                        .forEach(System.out::println);
-        } else {
-            view.printInvalidInput();
+        // if is there any data in the attendance file
+        if(attendances.size() == 0){
+            view.printNoAttendancesInList();
         }
-    }
+        else {
+            //show list of dates
+            attendances.entrySet().stream()
+                    .map(HashMap.Entry::getKey)
+                    .forEach(System.out::println);
 
-    /**
-     * Collect accurate user input, that can be turned into int, otherwise return -1
-     *
-     * @param number the number in a String.
-     * @return a number as an int.
-     */
-    private int convertIndexToInt(String number) {
-        int convertedIndex;
-        try {
-            convertedIndex = Integer.parseInt(number);
-            return convertedIndex;
-        } catch (NumberFormatException e) {
-            return -1;
+            //User chooses a date
+            //If it is valid show attendance for that day
+            view.printDateQuestion();
+            LocalDate date = convertDate(userInput());
+            if (date != null) {
+                attendances.entrySet().stream()
+                        .filter(map -> map.getKey().isEqual(date))
+                        .map(HashMap.Entry::getValue)
+                        .flatMap(ArrayList::stream)
+                        .forEach(System.out::println);
+            } else {
+                view.printInvalidInput();
+            }
         }
     }
 
