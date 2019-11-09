@@ -28,7 +28,7 @@ public class FileManagerTest {
         listOfMembers.add(new Member("Name2", "id2"));
 
         //Write the file with the members
-        fm.writeJsonToFile(fm.convertMembersToJson(listOfMembers), "src/test/resources/member-list.json");
+        fm.writeJsonToFile(fm.convertMembersToJson(listOfMembers), "src/test/resources/","member-list.json");
 
         //Check if file is empty
         int fileSize;
@@ -64,7 +64,7 @@ public class FileManagerTest {
         attendances.put(date1, listOfAttendance1);
         attendances.put(date2, listOfAttendance2);
 
-        fm.writeJsonToFile(fm.convertAttendanceToJson(attendances), "src/test/resources/attendance-list.json");
+        fm.writeJsonToFile(fm.convertAttendanceToJson(attendances), "src/test/resources/","attendance-list.json");
 
         //Check if file is empty
         int fileSize;
