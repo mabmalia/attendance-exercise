@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import attendance.*;
+import util.Utility;
 
 /**
  * A class that reads and writes JSON files.
@@ -73,7 +74,7 @@ public class FileManager {
             //Second JSON object with an array
             JSONObject arrayElement = new JSONObject();
             arrayElement.put("name", members.get(index).getMemberName());
-            arrayElement.put("id", members.get(index).getMemberName());
+            arrayElement.put("id", members.get(index).getMemberID());
 
             //insert in the array
             array.add(arrayElement);
@@ -158,7 +159,7 @@ public class FileManager {
                     jsonAttendance.add(at);
                 }
 
-                attendancesMap.put(Controller.convertDate(date), jsonAttendance);
+                attendancesMap.put(Utility.convertDate(date), jsonAttendance);
             }
 
         } catch (IOException e) {

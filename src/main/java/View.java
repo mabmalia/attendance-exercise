@@ -13,8 +13,7 @@ public class View {
      * Print out a Welcome message to the user.
      */
     public void printWelcome() {
-        System.out.println("Welcome to Attendance application");
-        System.out.println("#################################\n");
+        System.out.println("Welcome to Attendance application!\n");
     }
 
     /**
@@ -24,6 +23,17 @@ public class View {
         System.out.println("Pick an option:");
         String[] actions = {"(1) Load member file", "(2) Check attendance",
                "(3) Display attendance", "(4) Create new member file", "(5) Edit member file", "(6) Quit"};
+        for (int i = 0; i < actions.length; i++) {
+            System.out.println(actions[i]);
+        }
+    }
+
+    /**
+     * Print edit menu.
+     */
+    public void printEditOptions(){
+        System.out.println("Pick an option:");
+        String[] actions = {"(1) Add a member", "(2) Remove a member"};
         for (int i = 0; i < actions.length; i++) {
             System.out.println(actions[i]);
         }
@@ -127,5 +137,27 @@ public class View {
      */
     public void printFileNotFound() {
         System.out.println("File not found.");
+    }
+
+    /**
+     * Print a message requesting user to select the index of a member.
+     */
+    public void printSelectIndex() {
+        System.out.println("Select the index of a member.");
+    }
+
+    /**
+     * Print a message stating that the user was successfully removed.
+     */
+    public void printMemberRemoved() {
+        System.out.println("Member was successfully removed.");
+    }
+
+    /**
+     * Print a message stating that the field is empty.
+     */
+    public void printFieldEmpty() {
+        System.out.println(">> Field cannot be empty.");
+        System.out.println(">> Press (Enter) to continue or (0) to return to main menu.");
     }
 }

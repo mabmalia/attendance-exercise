@@ -48,4 +48,11 @@ public class Member {
     public void setMemberID(String memberID) {
         this.memberID = memberID;
     }
+
+
+    @Override
+    public String toString() {
+        return "memberName = '" + memberName + '\'' +
+                ", memberID = '" + memberID + '\'';
+    }
 }
